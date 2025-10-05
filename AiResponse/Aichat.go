@@ -50,7 +50,7 @@ func GenerateInterviewQuestions(domain string) (*InterviewQuestions, error) {
 	`, domain)
 
 	response := CallOpenAIText(prompt)
-
+	log.Printf("Response: %s", response)
 	response = utils.CleanResp(response)
 
 	var questions InterviewQuestions
@@ -86,6 +86,7 @@ func CallOpenAIText(prompt string) string {
 			openai.UserMessage(prompt),
 		},
 		Model: openai.ChatModelGPT4o,
+		Temperature: openai.Float(0.9),
 	})
 	if err != nil {
 		panic(err.Error())
