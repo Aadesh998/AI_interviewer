@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resume Upload - Interactive Interview</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.container {
+  background: white;
+  border-radius: 30px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.3);
+  max-width: 600px;
+  width: 100%;
+  padding: 60px 50px;
+  text-align: center;
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.logo {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
+  margin: 0 auto 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+h1 {
+  font-size: 32px;
+  color: #1f2937;
+  margin-bottom: 15px;
+  font-weight: 700;
+}
+
+.subtitle {
+  color: #6b7280;
+  font-size: 16px;
+  margin-bottom: 40px;
+  line-height: 1.6;
+}
+
+.upload-area {
+  border: 3px dashed #d1d5db;
+  border-radius: 20px;
+  padding: 50px 30px;
+  margin-bottom: 30px;
+  transition: all 0.3s;
+  cursor: pointer;
+  background: #f9fafb;
+  position: relative;
+}
+
+.upload-area:hover {
+  border-color: #667eea;
+  background: #f3f4f6;
+  transform: translateY(-2px);
+}
+
+.upload-area.dragover {
+  border-color: #667eea;
+  background: #eef2ff;
+  transform: scale(1.02);
+}
+
+.upload-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  color: white;
+  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+}
+
+.upload-text {
+  font-size: 18px;
+  color: #374151;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.upload-subtext {
+  font-size: 14px;
+  color: #9ca3af;
+}
+
+.file-input {
+  display: none;
+}
+
+.file-info {
+  display: none;
+  background: #ecfdf5;
+  border: 2px solid #10b981;
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 30px;
+  animation: slideIn 0.3s ease-out;
+}
+
+.file-info.active {
+  display: block;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.file-info-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.file-details {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  text-align: left;
+}
+
+.file-icon {
+  width: 50px;
+  height: 50px;
+  background: #10b981;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+}
+
+.file-name {
+  font-size: 16px;
+  color: #065f46;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.file-size {
+  font-size: 13px;
+  color: #059669;
+}
+
+.remove-file {
+  background: none;
+  border: none;
+  color: #dc2626;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 5px;
+  transition: all 0.3s;
+}
+
+.remove-file:hover {
+  transform: scale(1.2);
+}
+
+.start-button {
+  width: 100%;
+  padding: 18px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 15px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+  display: none;
+}
+
+.start-button.active {
+  display: block;
+}
+
+.start-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+}
+
+.start-button:active {
+  transform: translateY(-1px);
+}
+
+.start-button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.loading {
+  display: none;
+  margin-top: 20px;
+}
+
+.loading.active {
+  display: block;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #e5e7eb;
+  border-top-color: #667eea;
+  border-radius: 50%;
+  margin: 0 auto 15px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  color: #6b7280;
+  font-size: 16px;
+}
+
+.error-message {
+  background: #fee2e2;
+  border: 2px solid #ef4444;
+  border-radius: 15px;
+  padding: 15px;
+  margin-top: 20px;
+  color: #991b1b;
+  display: none;
+}
+
+.error-message.active {
+  display: block;
+  animation: shake 0.5s;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
+}
+
+.requirements {
+  background: #eff6ff;
+  border-radius: 15px;
+  padding: 20px;
+  margin-top: 30px;
+  text-align: left;
+}
+
+.requirements-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e40af;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.requirements ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.requirements li {
+  font-size: 13px;
+  color: #3b82f6;
+  padding: 5px 0;
+  padding-left: 20px;
+  position: relative;
+}
+
+.requirements li:before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: #10b981;
+  font-weight: bold;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="logo">📄</div>
+  <h1>Upload Your Resume</h1>
+  <p class="subtitle">Start your interactive interview session by uploading your resume in PDF format</p>
+  
+  <form id="upload-form">
+    <div class="upload-area" id="upload-area">
+      <div class="upload-icon">📤</div>
+      <div class="upload-text">Click to upload or drag and drop</div>
+      <div class="upload-subtext">PDF files only (Max 10MB)</div>
+      <input type="file" id="resume-file" name="resume" accept=".pdf" class="file-input">
+    </div>
+    
+    <div class="file-info" id="file-info">
+      <div class="file-info-content">
+        <div class="file-details">
+          <div class="file-icon">📄</div>
+          <div>
+            <div class="file-name" id="file-name"></div>
+            <div class="file-size" id="file-size"></div>
+          </div>
+        </div>
+        <button type="button" class="remove-file" id="remove-file">×</button>
+      </div>
+    </div>
+    
+    <button type="submit" class="start-button" id="start-button">Start Interview Session</button>
+    
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <div class="loading-text">Creating your session...</div>
+    </div>
+    
+    <div class="error-message" id="error-message"></div>
+  </form>
+  
+  <div class="requirements">
+    <div class="requirements-title">
+      <span>ℹ️</span>
+      <span>Important Requirements</span>
+    </div>
+    <ul>
+      <li>Stay focused - switching tabs will end the session</li>
+      <li>Camera and microphone access required</li>
+      <li>Session will be recorded for evaluation</li>
+      <li>Ensure stable internet connection</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+const uploadArea = document.getElementById('upload-area');
+const fileInput = document.getElementById('resume-file');
+const fileInfo = document.getElementById('file-info');
+const fileName = document.getElementById('file-name');
+const fileSize = document.getElementById('file-size');
+const removeFileBtn = document.getElementById('remove-file');
+const startButton = document.getElementById('start-button');
+const loading = document.getElementById('loading');
+const errorMessage = document.getElementById('error-message');
+const form = document.getElementById('upload-form');
+
+let selectedFile = null;
+
+// Click to upload
+uploadArea.addEventListener('click', () => {
+  fileInput.click();
+});
+
+// File selection
+fileInput.addEventListener('change', handleFileSelect);
+
+// Drag and drop
+uploadArea.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  uploadArea.classList.add('dragover');
+});
+
+uploadArea.addEventListener('dragleave', () => {
+  uploadArea.classList.remove('dragover');
+});
+
+uploadArea.addEventListener('drop', (e) => {
+  e.preventDefault();
+  uploadArea.classList.remove('dragover');
+  
+  const files = e.dataTransfer.files;
+  if (files.length > 0) {
+    const file = files[0];
+    if (file.type === 'application/pdf') {
+      fileInput.files = files;
+      handleFileSelect();
+    } else {
+      showError('Please upload a PDF file only');
+    }
+  }
+});
+
+function handleFileSelect() {
+  const file = fileInput.files[0];
+  
+  if (!file) return;
+  
+  // Validate file type
+  if (file.type !== 'application/pdf') {
+    showError('Please upload a PDF file only');
+    fileInput.value = '';
+    return;
+  }
+  
+  // Validate file size (10MB)
+  if (file.size > 10 * 1024 * 1024) {
+    showError('File size must be less than 10MB');
+    fileInput.value = '';
+    return;
+  }
+  
+  selectedFile = file;
+  
+  // Display file info
+  fileName.textContent = file.name;
+  fileSize.textContent = formatFileSize(file.size);
+  
+  uploadArea.style.display = 'none';
+  fileInfo.classList.add('active');
+  startButton.classList.add('active');
+  errorMessage.classList.remove('active');
+}
+
+function formatFileSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+}
+
+// Remove file
+removeFileBtn.addEventListener('click', () => {
+  fileInput.value = '';
+  selectedFile = null;
+  uploadArea.style.display = 'block';
+  fileInfo.classList.remove('active');
+  startButton.classList.remove('active');
+});
+
+// Form submission
+form.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  
+  if (!selectedFile) {
+    showError('Please select a file to upload');
+    return;
+  }
+  
+  const formData = new FormData();
+  formData.append('resume', selectedFile);
+  
+  // Show loading
+  startButton.style.display = 'none';
+  loading.classList.add('active');
+  errorMessage.classList.remove('active');
+  
+  try {
+    const response = await fetch('/create-session', {
+      method: 'POST',
+      body: formData
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to create session');
+    }
+    
+    const data = await response.json();
+    const sessionId = data.session_id;
+    
+    console.log('Session ID:', sessionId);
+    
+    // Redirect to the dashboard with the session ID
+    window.location.href = `/dashboard?session_id=${sessionId}`;
+    
+  } catch (error) {
+    console.error('Error:', error);
+    showError('An error occurred while creating your session. Please try again.');
+    
+    // Reset UI
+    loading.classList.remove('active');
+    startButton.style.display = 'block';
+  }
+});
+
+function showError(message) {
+  errorMessage.textContent = message;
+  errorMessage.classList.add('active');
+  
+  setTimeout(() => {
+    errorMessage.classList.remove('active');
+  }, 5000);
+}
+</script>
+</body>
+</html>

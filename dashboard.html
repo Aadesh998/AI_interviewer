@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interactive Dashboard</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  overflow: hidden;
+}
+
+.header {
+  background: linear-gradient(135deg, #5e72e4 0%, #825ee4 100%);
+  color: white;
+  padding: 25px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header h1 {
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.session-info {
+  background: rgba(255,255,255,0.2);
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-size: 14px;
+  backdrop-filter: blur(10px);
+}
+
+.status-indicator {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background: #10b981;
+  border-radius: 50%;
+  margin-right: 8px;
+  animation: pulse 2s infinite;
+}
+
+.status-indicator.warning {
+  background: #f59e0b;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.main-content {
+  display: flex;
+  height: calc(100vh - 200px);
+}
+
+.video-section {
+  width: 40%;
+  background: #1f2937;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-right: 3px solid #e5e7eb;
+}
+
+.video-container {
+  width: 100%;
+  max-width: 500px;
+  background: #111827;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+#webcam {
+  width: 100%;
+  display: block;
+  transform: scaleX(-1);
+}
+
+.recording-indicator {
+  margin-top: 15px;
+  color: white;
+  font-size: 14px;
+  display: none;
+  align-items: center;
+  gap: 10px;
+}
+
+.recording-indicator.active {
+  display: flex;
+}
+
+.rec-dot {
+  width: 12px;
+  height: 12px;
+  background: #ef4444;
+  border-radius: 50%;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.chat-section {
+  width: 60%;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-container {
+  flex: 1;
+  padding: 30px;
+  overflow-y: auto;
+  background: #f9fafb;
+}
+
+.message {
+  margin-bottom: 20px;
+  display: flex;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message.ai {
+  justify-content: flex-start;
+}
+
+.message.user {
+  justify-content: flex-end;
+}
+
+.message-content {
+  max-width: 70%;
+  padding: 15px 20px;
+  border-radius: 20px;
+  position: relative;
+  word-wrap: break-word;
+}
+
+.message.ai .message-content {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-bottom-left-radius: 5px;
+}
+
+.message.user .message-content {
+  background: #10b981;
+  color: white;
+  border-bottom-right-radius: 5px;
+}
+
+.message-label {
+  font-size: 11px;
+  opacity: 0.9;
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+
+.input-area {
+  padding: 20px 30px;
+  background: white;
+  border-top: 2px solid #e5e7eb;
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+#user-input {
+  flex: 1;
+  padding: 15px 20px;
+  border: 2px solid #e5e7eb;
+  border-radius: 25px;
+  font-size: 15px;
+  outline: none;
+  transition: all 0.3s;
+}
+
+#user-input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.audio-button {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.audio-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 5px 15px rgba(245, 158, 11, 0.3);
+}
+
+.audio-button.recording {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  animation: recordPulse 1s infinite;
+}
+
+@keyframes recordPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.audio-button.sending {
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  cursor: not-allowed;
+}
+
+#send-button {
+  padding: 15px 35px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+#send-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+}
+
+#send-button:active {
+  transform: translateY(0);
+}
+
+.warning-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #fef3c7;
+  border: 2px solid #f59e0b;
+  border-radius: 15px;
+  padding: 20px 25px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  display: none;
+  align-items: center;
+  gap: 15px;
+  z-index: 1000;
+  animation: slideInRight 0.3s ease-out;
+}
+
+.warning-toast.active {
+  display: flex;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.warning-icon {
+  font-size: 24px;
+}
+
+.warning-content {
+  flex: 1;
+}
+
+.warning-title {
+  font-weight: 600;
+  color: #92400e;
+  margin-bottom: 5px;
+}
+
+.warning-text {
+  font-size: 14px;
+  color: #b45309;
+}
+
+.close-toast {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #92400e;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+}
+
+.audio-timer {
+  position: absolute;
+  bottom: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2937;
+  color: white;
+  padding: 5px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Interactive Dashboard</h1>
+    <div class="session-info">
+      <span class="status-indicator" id="status-indicator"></span>
+      Session: <span id="session-id">Loading...</span>
+    </div>
+  </div>
+  
+  <div class="main-content">
+    <div class="video-section">
+      <div class="video-container">
+        <video id="webcam" autoplay playsinline></video>
+      </div>
+      <div class="recording-indicator" id="recording-indicator">
+        <div class="rec-dot"></div>
+        <span>Recording in progress</span>
+      </div>
+    </div>
+    
+    <div class="chat-section">
+      <div class="chat-container" id="chat-container"></div>
+      
+      <div class="input-area">
+        <button class="audio-button" id="audio-button" title="Record Audio">
+          🎤
+          <div class="audio-timer" id="audio-timer" style="display: none;">00:00</div>
+        </button>
+        <input type="text" id="user-input" placeholder="Type your message..." autocomplete="off">
+        <button id="send-button">Send</button>
+        <button id="download-button" style="display: none; margin-left: 10px; padding: 15px 25px; background: #10b981; color: white; border: none; border-radius: 25px; font-size: 15px; font-weight: 600; cursor: pointer;">Download Report</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="warning-toast" id="warning-toast">
+  <div class="warning-icon">⚠️</div>
+  <div class="warning-content">
+    <div class="warning-title">Warning: Tab Switch Detected</div>
+    <div class="warning-text">Switching tabs again will terminate your session!</div>
+  </div>
+  <button class="close-toast" id="close-toast">×</button>
+</div>
+
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const sessionId = urlParams.get('session_id');
+const chatContainer = document.getElementById('chat-container');
+const userInput = document.getElementById('user-input');
+const sendButton = document.getElementById('send-button');
+const downloadButton = document.getElementById('download-button');
+const warningToast = document.getElementById('warning-toast');
+const closeToast = document.getElementById('close-toast');
+const recordingIndicator = document.getElementById('recording-indicator');
+const audioButton = document.getElementById('audio-button');
+const audioTimer = document.getElementById('audio-timer');
+const statusIndicator = document.getElementById('status-indicator');
+
+let mediaRecorder;
+let recordedChunks = [];
+let ws;
+let sessionActive = true;
+let tabSwitchCount = 0;
+
+// Audio recording variables
+let audioRecorder;
+let audioChunks = [];
+let isRecordingAudio = false;
+let audioStream;
+let recordingStartTime;
+let timerInterval;
+
+// Display session ID
+if (sessionId) {
+  document.getElementById('session-id').textContent = sessionId;
+} else {
+  document.getElementById('session-id').textContent = 'No session ID';
+}
+
+// Initialize webcam and recording
+async function initWebcam() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ 
+      video: { width: 1280, height: 720 }, 
+      audio: true 
+    });
+    
+    document.getElementById('webcam').srcObject = stream;
+    
+    // Start recording
+    mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+    
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        recordedChunks.push(event.data);
+      }
+    };
+    
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(recordedChunks, { type: 'video/webm' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `session_${sessionId}_${Date.now()}.webm`;
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+    
+    mediaRecorder.start();
+    recordingIndicator.classList.add('active');
+    
+  } catch (error) {
+    console.error('Error accessing webcam:', error);
+    addMessage('ai', 'Unable to access webcam. Please grant permission.');
+  }
+}
+
+// Initialize WebSocket
+if (sessionId) {
+  ws = new WebSocket(`ws://localhost:8000/ws?session_id=${sessionId}`);
+  
+  ws.onmessage = (event) => {
+    console.log('Message from server: ', event.data);
+    addMessage('ai', event.data);
+
+    if (event.data.includes("The interview is now complete")) {
+        downloadButton.style.display = 'block';
+        sendButton.disabled = true;
+        userInput.disabled = true;
+        audioButton.disabled = true;
+    }
+  };
+  
+  ws.onclose = () => {
+    console.log('WebSocket connection closed');
+    if (sessionActive) {
+      addMessage('ai', 'Connection closed. Please refresh the page.');
+    }
+  };
+  
+  ws.onerror = (error) => {
+    console.error('WebSocket error: ', error);
+    addMessage('ai', 'Connection error occurred.');
+  };
+}
+
+// Add message to chat
+function addMessage(type, text) {
+  const messageDiv = document.createElement('div');
+  messageDiv.className = `message ${type}`;
+  
+  const messageContent = document.createElement('div');
+  messageContent.className = 'message-content';
+  
+  const label = document.createElement('div');
+  label.className = 'message-label';
+  label.textContent = type === 'ai' ? 'AI Assistant' : 'You';
+  
+  const textContent = document.createElement('div');
+  textContent.textContent = text;
+  
+  messageContent.appendChild(label);
+  messageContent.appendChild(textContent);
+  messageDiv.appendChild(messageContent);
+  
+  chatContainer.appendChild(messageDiv);
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+// Send message
+function sendMessage() {
+  const message = userInput.value.trim();
+  if (message && ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(message);
+    addMessage('user', message);
+    userInput.value = '';
+  }
+}
+
+sendButton.addEventListener('click', sendMessage);
+userInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    sendMessage();
+  }
+});
+
+downloadButton.addEventListener('click', () => {
+    if (sessionId) {
+        window.location.href = `/download-feedback?session_id=${sessionId}`;
+    } else {
+        alert('Session ID not found. Cannot download report.');
+    }
+});
+
+// Audio recording functionality
+audioButton.addEventListener('click', async () => {
+  if (!isRecordingAudio) {
+    await startAudioRecording();
+  } else {
+    await stopAudioRecording();
+  }
+});
+
+async function startAudioRecording() {
+  try {
+    audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioRecorder = new MediaRecorder(audioStream);
+    audioChunks = [];
+    
+    audioRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        audioChunks.push(event.data);
+      }
+    };
+    
+    audioRecorder.onstop = async () => {
+      await sendAudioToBackend();
+    };
+    
+    audioRecorder.start();
+    isRecordingAudio = true;
+    audioButton.classList.add('recording');
+    audioButton.textContent = '⏹️';
+    
+    // Start timer
+    recordingStartTime = Date.now();
+    audioTimer.style.display = 'block';
+    updateTimer();
+    timerInterval = setInterval(updateTimer, 1000);
+    
+    userInput.disabled = true;
+    sendButton.disabled = true;
+    
+    console.log('Audio recording started');
+  } catch (error) {
+    console.error('Error starting audio recording:', error);
+    addMessage('ai', 'Unable to access microphone for audio recording.');
+  }
+}
+
+function updateTimer() {
+  const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+  const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+  const seconds = (elapsed % 60).toString().padStart(2, '0');
+  audioTimer.textContent = `${minutes}:${seconds}`;
+}
+
+async function stopAudioRecording() {
+  if (audioRecorder && audioRecorder.state !== 'inactive') {
+    audioRecorder.stop();
+    audioStream.getTracks().forEach(track => track.stop());
+    
+    isRecordingAudio = false;
+    audioButton.classList.remove('recording');
+    audioButton.classList.add('sending');
+    audioButton.textContent = '⏳';
+    
+    clearInterval(timerInterval);
+    audioTimer.style.display = 'none';
+    
+    console.log('Audio recording stopped');
+  }
+}
+
+async function sendAudioToBackend() {
+  try {
+    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+    
+    const formData = new FormData();
+    formData.append('video', audioBlob, 'audio.webm');
+    formData.append('session_id', sessionId);
+    
+    const response = await fetch('/audio', {
+      method: 'POST',
+      body: formData
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to send audio');
+    }
+    
+    const data = await response.json();
+    console.log('Audio sent successfully:', data);
+
+    if (data.success && data.text) {
+        console.log(data.text)
+        userInput.value = data.text;
+    } else {
+        console.log("Could not transcribe audio. Please try again")
+    }
+    
+    // Reset button
+    audioButton.classList.remove('sending');
+    audioButton.textContent = '🎤';
+    userInput.disabled = false;
+    sendButton.disabled = false;
+    
+  } catch (error) {
+    console.error('Error sending audio:', error);
+    addMessage('ai', 'Failed to send audio. Please try again.');
+    
+    audioButton.classList.remove('sending');
+    audioButton.textContent = '🎤';
+    userInput.disabled = false;
+    sendButton.disabled = false;
+  }
+}
+
+// Track window focus - modified to only warn
+window.addEventListener('blur', () => {
+  if (sessionActive) {
+    tabSwitchCount++;
+    console.log('Window lost focus. Count:', tabSwitchCount);
+    
+    if (tabSwitchCount === 1) {
+      showWarning();
+    } else if (tabSwitchCount >= 2) {
+      terminateSession();
+    }
+  }
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && sessionActive) {
+    tabSwitchCount++;
+    console.log('Tab hidden. Count:', tabSwitchCount);
+    
+    if (tabSwitchCount === 1) {
+      showWarning();
+    } else if (tabSwitchCount >= 2) {
+      terminateSession();
+    }
+  }
+});
+
+function showWarning() {
+  warningToast.classList.add('active');
+  statusIndicator.classList.add('warning');
+  
+  // Auto-hide after 5 seconds
+  setTimeout(() => {
+    warningToast.classList.remove('active');
+  }, 5000);
+}
+
+closeToast.addEventListener('click', () => {
+  warningToast.classList.remove('active');
+});
+
+function terminateSession() {
+  sessionActive = false;
+  statusIndicator.style.background = '#ef4444';
+  
+  addMessage('ai', '❌ Session terminated due to multiple tab switches. The session has been discarded.');
+  
+  // Stop recording
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop();
+  }
+  
+  // Close WebSocket
+  if (ws) {
+    ws.close();
+  }
+  
+  // Stop webcam
+  const webcam = document.getElementById('webcam');
+  if (webcam.srcObject) {
+    webcam.srcObject.getTracks().forEach(track => track.stop());
+  }
+  
+  // Disable input
+  userInput.disabled = true;
+  sendButton.disabled = true;
+  audioButton.disabled = true;
+  audioButton.style.opacity = '0.5';
+  audioButton.style.cursor = 'not-allowed';
+}
+
+// Save recording when window closes
+window.addEventListener('beforeunload', () => {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop();
+  }
+});
+
+// Initialize webcam on load
+initWebcam();
+</script>
+</body>
+</html>
